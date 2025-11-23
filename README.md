@@ -1,6 +1,6 @@
 # pdf_master
 
-[中文版本](README-zh.md)
+[中文版本](https://github.com/chengjie-jlu/pdf_master/blob/master/README-zh.md)
 
 pdf_master is a cross-platform PDF document viewer framework built with Flutter, powered by [pdfium](https://pdfium.googlesource.com/pdfium/).
 
