@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main  # Trigger when you push this workflow file to main
+      - main
 
 permissions:
   contents: write
@@ -33,7 +33,7 @@ jobs:
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.0'
+          flutter-version: '3.38.4'
           channel: 'stable'
           cache: true
 
