@@ -276,7 +276,8 @@ class _HomePageState extends State<HomePage> {
                   onTap: () => _onFileItemTap(fileList[index]),
                   onLongPress: () => _enterEditMode(index),
                   onFileDelete: () => _handleFileDelete(fileList[index].path),
-                  highlight: fileList[index].path == _highlightedFilePath,
+                  /// TODO The highlight feature has a bug; disable it for now.
+                  highlight: false,
                   action: _getActionByIndex(index),
                 ),
                 itemCount: fileList.length,

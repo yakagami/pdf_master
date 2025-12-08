@@ -191,6 +191,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             key: ValueKey(MediaQuery.orientationOf(context)),
             controller: controller,
             constraints: BoxConstraints(maxWidth: constraints.maxWidth, maxHeight: constraints.maxHeight),
+            padding: EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
@@ -202,6 +203,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             key: ValueKey(MediaQuery.orientationOf(context)),
             controller: controller,
             constraints: BoxConstraints(maxWidth: constraints.maxWidth, maxHeight: constraints.maxHeight),
+            padding: EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
@@ -389,6 +391,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
 class PdfPageViewer extends StatefulWidget {
   final PdfController controller;
   final BoxConstraints constraints;
+  final EdgeInsets padding;
   final GlobalKey containerKey;
   final bool enableEdit;
   final int initialPageIndex;
@@ -400,6 +403,7 @@ class PdfPageViewer extends StatefulWidget {
     super.key,
     required this.controller,
     required this.constraints,
+    required this.padding,
     required this.containerKey,
     required this.enableEdit,
     this.initialPageIndex = 0,
@@ -516,6 +520,7 @@ class _PdfPageViewerState extends State<PdfPageViewer> {
 class PdfListViewer extends StatefulWidget {
   final PdfController controller;
   final BoxConstraints constraints;
+  final EdgeInsets padding;
   final GlobalKey containerKey;
   final bool enableEdit;
   final int initialPageIndex;
@@ -527,6 +532,7 @@ class PdfListViewer extends StatefulWidget {
     super.key,
     required this.controller,
     required this.constraints,
+    required this.padding,
     required this.containerKey,
     required this.enableEdit,
     this.initialPageIndex = 0,
