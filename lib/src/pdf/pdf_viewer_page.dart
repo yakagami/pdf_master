@@ -67,16 +67,10 @@ class FullScreenExitButton extends StatelessWidget {
       top: top,
       right: right,
       child: Container(
-        margin: EdgeInsets.only(
-          right: right > 24 ? 0 : max(24 - right, 0),
-          top: top > 24 ? 0 : max(24 - top, 0),
-        ),
+        margin: EdgeInsets.only(right: right > 24 ? 0 : max(24 - right, 0), top: top > 24 ? 0 : max(24 - top, 0)),
         width: 48,
         height: 48,
-        decoration: BoxDecoration(
-          color: Colors.black.withAlpha(128),
-          borderRadius: BorderRadius.circular(24),
-        ),
+        decoration: BoxDecoration(color: Colors.black.withAlpha(128), borderRadius: BorderRadius.circular(24)),
         child: IconButton(
           onPressed: onTap,
           icon: Icon(Icons.close, color: Colors.white, size: 28),
@@ -97,15 +91,13 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   late bool _barsVisible;
 
   double get appBarHeight {
-    final renderBox =
-        appBarKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = appBarKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null || !renderBox.hasSize) return 0;
     return renderBox.size.height;
   }
 
   double get bottomBarHeight {
-    final renderBox =
-        bottomBarKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = bottomBarKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null || !renderBox.hasSize) return 0;
     return renderBox.size.height;
   }
@@ -126,7 +118,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   void dispose() {
     super.dispose();
     controller.dispose();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge); 
     PdfMaster.instance.darkModeNotifier.removeListener(_onDarkModeChanged);
     SystemChrome.setPreferredOrientations([]);
   }
@@ -154,9 +146,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
     } else if (controller.needPassword) {
       final input = await showPdfMasterInputDialog(
         context,
-        context.localizations[controller.password.isEmpty
-            ? "needPassword"
-            : "passwordErr"],
+        context.localizations[controller.password.isEmpty ? "needPassword" : "passwordErr"],
         context.localizations["inputPassword"],
       );
       if (input == null) {
@@ -166,11 +156,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
         _openDocument(input);
       }
     } else {
-      await showPdfMasterAlertDialog(
-        context,
-        context.localizations["fmtErr"],
-        context.localizations['ok'],
-      );
+      await showPdfMasterAlertDialog(context, context.localizations["fmtErr"], context.localizations['ok']);
       if (mounted) Navigator.pop(context);
     }
   }
@@ -181,7 +167,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
 
   Widget _buildContent(_, BoxConstraints constraints) {
     final padded = EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight);
-    late EdgeInsets contentPadding;
+    late final EdgeInsets contentPadding;
     if (widget.appBarPadding == true) {
       contentPadding = padded;
     } else if (widget.appBarPadding == false) {
@@ -189,6 +175,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
     } else {
       contentPadding = widget.immersive ? EdgeInsets.zero : padded;
     }
+    
     switch (controller.openState) {
       case PdfOpenState.kFmtError:
       case PdfOpenState.kUnknownError:
@@ -203,10 +190,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
           replacement: PdfListViewer(
             key: ValueKey(MediaQuery.orientationOf(context)),
             controller: controller,
-            constraints: BoxConstraints(
-              maxWidth: constraints.maxWidth,
-              maxHeight: constraints.maxHeight,
-            ),
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth, maxHeight: constraints.maxHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
@@ -217,10 +201,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
           child: PdfPageViewer(
             key: ValueKey(MediaQuery.orientationOf(context)),
             controller: controller,
-            constraints: BoxConstraints(
-              maxWidth: constraints.maxWidth,
-              maxHeight: constraints.maxHeight,
-            ),
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth, maxHeight: constraints.maxHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
@@ -252,9 +233,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             AnimatedPositioned(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
-              top: _barsVisible
-                  ? 0
-                  : -(appBarHeight + MediaQuery.of(context).padding.top),
+              top: _barsVisible ? 0 : -(appBarHeight + MediaQuery.of(context).padding.top),
               left: 0,
               right: 0,
               child: _appBar(),
@@ -263,16 +242,13 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             AnimatedPositioned(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
-              bottom: _barsVisible
-                  ? 0
-                  : -(bottomBarHeight + MediaQuery.of(context).padding.bottom),
+              bottom: _barsVisible ? 0 : -(bottomBarHeight + MediaQuery.of(context).padding.bottom),
               left: 0,
               right: 0,
               child: _bottomBar(),
             ),
 
-            if (fullscreen)
-              FullScreenExitButton(onTap: () => _changeFullScreenMode(false)),
+            if (fullscreen) FullScreenExitButton(onTap: () => _changeFullScreenMode(false)),
           ],
         ),
       ),
@@ -295,25 +271,16 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
           case PdfEditState.kNone:
             return PdfMasterAppBar(
               title: p.basename(widget.filePath),
-              leading: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.arrow_back),
-              ),
+              leading: IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.arrow_back)),
               action: Visibility(
                 visible: PdfMaster.instance.shareHandler != null,
-                child: IconButton(
-                  onPressed: _onShareTapped,
-                  icon: Icon(Icons.ios_share),
-                ),
+                child: IconButton(onPressed: _onShareTapped, icon: Icon(Icons.ios_share)),
               ),
             );
           case PdfEditState.kEdit:
             return EditToolBar(controller: controller);
           case PdfEditState.kSearch:
-            return SearchToolBar(
-              controller: controller,
-              searchState: controller.searchState,
-            );
+            return SearchToolBar(controller: controller, searchState: controller.searchState);
         }
       },
     );
@@ -328,16 +295,9 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
         switch (editMode) {
           case PdfEditState.kEdit:
           case PdfEditState.kNone:
-            return BottomToolbar(
-              pageMode: pageMode,
-              onToolAction: _onToolAction,
-              features: widget.features,
-            );
+            return BottomToolbar(pageMode: pageMode, onToolAction: _onToolAction, features: widget.features);
           case PdfEditState.kSearch:
-            return SearchBottomBar(
-              controller: controller,
-              searchState: controller.searchState,
-            );
+            return SearchBottomBar(controller: controller, searchState: controller.searchState);
         }
       },
     );
@@ -369,10 +329,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
     this.fullscreen = fullscreen;
     if (fullscreen) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
+      SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
     } else {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -396,12 +353,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
         }
         break;
       case ToolAction.kMore:
-        showFeatureMenus(
-          context,
-          controller,
-          widget.features,
-          _onFeatureAction,
-        );
+        showFeatureMenus(context, controller, widget.features, _onFeatureAction);
         break;
       case ToolAction.kRotate:
         _changeFullScreenMode(true);
@@ -414,29 +366,17 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
     if (!mounted) return;
     switch (action) {
       case AdvancedFeature.kPageManage:
-        final newFilePath = await Navigator.of(context).push<String>(
-          PDFMasterPageRouter(
-            builder: (ctx) => PageManagePage(controller: controller),
-          ),
-        );
+        final newFilePath = await Navigator.of(
+          context,
+        ).push<String>(PDFMasterPageRouter(builder: (ctx) => PageManagePage(controller: controller)));
         if (!mounted || newFilePath == null) return;
         Navigator.pop(context, newFilePath);
         break;
       case AdvancedFeature.kConvertImage:
-        Navigator.push(
-          context,
-          PDFMasterPageRouter(
-            builder: (ctx) => PageSelector(controller: controller),
-          ),
-        );
+        Navigator.push(context, PDFMasterPageRouter(builder: (ctx) => PageSelector(controller: controller)));
         break;
       case AdvancedFeature.kImageExtract:
-        Navigator.push(
-          context,
-          PDFMasterPageRouter(
-            builder: (ctx) => ImageExtractPage(controller: controller),
-          ),
-        );
+        Navigator.push(context, PDFMasterPageRouter(builder: (ctx) => ImageExtractPage(controller: controller)));
         break;
     }
   }
@@ -499,10 +439,7 @@ class _PdfPageViewerState extends State<PdfPageViewer> {
     if (!scrollController.hasClients) return;
     final offset = scrollController.offset;
     final pageWidth = widget.constraints.maxWidth;
-    final currentPage = (offset / pageWidth).round().clamp(
-      0,
-      widget.controller.pageCount - 1,
-    );
+    final currentPage = (offset / pageWidth).round().clamp(0, widget.controller.pageCount - 1);
 
     if (currentPage != _currentPageIndex) {
       _currentPageIndex = currentPage;
@@ -512,20 +449,13 @@ class _PdfPageViewerState extends State<PdfPageViewer> {
   }
 
   void _jumpToPage(int pageIndex, {bool withoutAnim = false}) {
-    if (scrollController.hasClients &&
-        pageIndex >= 0 &&
-        pageIndex < widget.controller.pageCount) {
+    if (scrollController.hasClients && pageIndex >= 0 && pageIndex < widget.controller.pageCount) {
       final targetOffset = pageIndex * widget.constraints.maxWidth;
       final delta = scrollController.offset - targetOffset;
-      if (withoutAnim ||
-          delta.abs() > widget.constraints.maxWidth * _kMaxPageJumpCount) {
+      if (withoutAnim || delta.abs() > widget.constraints.maxWidth * _kMaxPageJumpCount) {
         scrollController.jumpTo(targetOffset);
       } else {
-        scrollController.animateTo(
-          targetOffset,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+        scrollController.animateTo(targetOffset, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       }
     }
   }
@@ -552,9 +482,7 @@ class _PdfPageViewerState extends State<PdfPageViewer> {
           final newScale = scale;
           if (zoomViewScale == 1.0) {
             zoomViewScale = newScale;
-            scrollController.jumpTo(
-              scrollController.offset + widget.constraints.maxWidth * 0.5,
-            );
+            scrollController.jumpTo(scrollController.offset + widget.constraints.maxWidth * 0.5);
             setState(() {});
           } else {
             zoomViewScale = newScale;
@@ -643,9 +571,7 @@ class _PdfListViewerState extends State<PdfListViewer> {
     int currentPage = 0;
 
     for (int i = 0; i < widget.controller.pageCount; i++) {
-      final pageHeight =
-          widget.constraints.maxWidth /
-          widget.controller.getPageSizeAt(i).aspectRatio;
+      final pageHeight = widget.constraints.maxWidth / widget.controller.getPageSizeAt(i).aspectRatio;
       if (offset < accumulatedHeight + pageHeight / 2) {
         currentPage = i;
         break;
@@ -662,26 +588,17 @@ class _PdfListViewerState extends State<PdfListViewer> {
   }
 
   void _jumpToPage(int pageIndex, {bool withoutAnim = false}) {
-    if (scrollController.hasClients &&
-        pageIndex >= 0 &&
-        pageIndex < widget.controller.pageCount) {
+    if (scrollController.hasClients && pageIndex >= 0 && pageIndex < widget.controller.pageCount) {
       double targetOffset = 0;
       for (int i = 0; i < pageIndex; i++) {
-        targetOffset +=
-            widget.constraints.maxWidth /
-            widget.controller.getPageSizeAt(i).aspectRatio;
+        targetOffset += widget.constraints.maxWidth / widget.controller.getPageSizeAt(i).aspectRatio;
         targetOffset += _separatorHeight;
       }
       final delta = scrollController.offset - targetOffset;
-      if (withoutAnim ||
-          delta.abs() > widget.constraints.maxHeight * _kMaxPageJumpCount) {
+      if (withoutAnim || delta.abs() > widget.constraints.maxHeight * _kMaxPageJumpCount) {
         scrollController.jumpTo(targetOffset);
       } else {
-        scrollController.animateTo(
-          targetOffset,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+        scrollController.animateTo(targetOffset, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       }
     }
   }
@@ -689,14 +606,10 @@ class _PdfListViewerState extends State<PdfListViewer> {
   double _getListViewPaddingTop() {
     double totalHeight = 0;
     for (int index = 0; index < widget.controller.pageCount; index++) {
-      totalHeight +=
-          widget.constraints.maxWidth /
-          widget.controller.getPageSizeAt(index).aspectRatio;
+      totalHeight += widget.constraints.maxWidth / widget.controller.getPageSizeAt(index).aspectRatio;
     }
     totalHeight += (widget.controller.pageCount - 1) * _separatorHeight;
-    return totalHeight > widget.constraints.maxHeight
-        ? 0
-        : (widget.constraints.maxHeight - totalHeight) / 2;
+    return totalHeight > widget.constraints.maxHeight ? 0 : (widget.constraints.maxHeight - totalHeight) / 2;
   }
 
   @override
@@ -770,10 +683,7 @@ class _PdfViewBox extends StatelessWidget {
       return constraints;
     }
 
-    return BoxConstraints(
-      maxWidth: pageSize.aspectRatio * constraints.maxHeight,
-      maxHeight: constraints.maxHeight,
-    );
+    return BoxConstraints(maxWidth: pageSize.aspectRatio * constraints.maxHeight, maxHeight: constraints.maxHeight);
   }
 
   @override
