@@ -174,7 +174,7 @@ class PreferenceSegmentedControl extends StatelessWidget {
             groupValue: groupValue,
             onValueChanged: onValueChanged,
             children: const {
-              PaddingChoice.none: Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('Default')), // Add to l10n ideally
+              PaddingChoice.none: Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('Default')),
               PaddingChoice.yes: Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('On')),
               PaddingChoice.no: Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('Off')),
             },
@@ -260,12 +260,11 @@ class _PreferencePageState extends State<PreferencePage> {
             },
           ),
           SizedBox(height: 1),
-          // 6. ADD THE UI CONTROL
           ValueListenableBuilder<PaddingChoice>(
             valueListenable: appBarPaddingNotifier,
             builder: (context, paddingValue, _) {
               return PreferenceSegmentedControl(
-                title: "AppBar Padding", // Add to l10n
+                title: "AppBar Padding",
                 groupValue: paddingValue,
                 onValueChanged: onAppBarPaddingChanged,
               );
