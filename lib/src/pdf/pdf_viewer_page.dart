@@ -156,6 +156,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             key: ValueKey(MediaQuery.orientationOf(context)),
             controller: controller,
             constraints: BoxConstraints(maxWidth: constraints.maxWidth, maxHeight: constraints.maxHeight),
+            padding: EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
@@ -166,6 +167,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             key: ValueKey(MediaQuery.orientationOf(context)),
             controller: controller,
             constraints: BoxConstraints(maxWidth: constraints.maxWidth, maxHeight: constraints.maxHeight),
+            padding: EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
@@ -182,11 +184,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          Positioned.fill(
-            top: appBarHeight,
-            bottom: bottomBarHeight,
-            child: LayoutBuilder(builder: _buildContent),
-          ),
+          Positioned.fill(top: 0, bottom: 0, child: LayoutBuilder(builder: _buildContent)),
           Positioned(top: 0, left: 0, right: 0, child: _appBar()),
           Positioned(bottom: 0, left: 0, right: 0, child: _bottomBar()),
           if (fullscreen) FullScreenExitButton(onTap: () => _changeFullScreenMode(false)),
@@ -329,6 +327,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
 class PdfPageViewer extends StatefulWidget {
   final PdfController controller;
   final BoxConstraints constraints;
+  final EdgeInsets padding;
   final GlobalKey containerKey;
   final bool enableEdit;
   final int initialPageIndex;
@@ -339,6 +338,7 @@ class PdfPageViewer extends StatefulWidget {
     super.key,
     required this.controller,
     required this.constraints,
+    required this.padding,
     required this.containerKey,
     required this.enableEdit,
     this.initialPageIndex = 0,
@@ -428,7 +428,7 @@ class _PdfPageViewerState extends State<PdfPageViewer> {
           widget.controller.scaleNotifier.value = zoomViewScale;
         },
         child: ListView.builder(
-          padding: EdgeInsets.zero,
+          padding: widget.padding,
           controller: scrollController,
           physics: zoomViewScale == 1.0 ? PageScrollPhysics() : null,
           scrollDirection: Axis.horizontal,
@@ -454,6 +454,7 @@ class _PdfPageViewerState extends State<PdfPageViewer> {
 class PdfListViewer extends StatefulWidget {
   final PdfController controller;
   final BoxConstraints constraints;
+  final EdgeInsets padding;
   final GlobalKey containerKey;
   final bool enableEdit;
   final int initialPageIndex;
@@ -464,6 +465,7 @@ class PdfListViewer extends StatefulWidget {
     super.key,
     required this.controller,
     required this.constraints,
+    required this.padding,
     required this.containerKey,
     required this.enableEdit,
     this.initialPageIndex = 0,
@@ -559,7 +561,7 @@ class _PdfListViewerState extends State<PdfListViewer> {
           widget.controller.scaleNotifier.value = zoomViewScale;
         },
         child: ListView.separated(
-          padding: EdgeInsets.only(top: _getListViewPaddingTop()),
+          padding: EdgeInsets.only(top: max(_getListViewPaddingTop(), widget.padding.top), bottom: widget.padding.top),
           cacheExtent: 3 * widget.constraints.maxHeight,
           controller: scrollController,
           itemBuilder: (ctx, index) => _PdfViewBox(
