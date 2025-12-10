@@ -14,6 +14,7 @@ import 'package:pdf_master/src/pdf/features/convert_image.dart';
 import 'package:pdf_master/src/pdf/features/features.dart';
 import 'package:pdf_master/src/pdf/features/image_extract.dart';
 import 'package:pdf_master/src/pdf/features/page_manage.dart';
+import 'package:pdf_master/src/pdf/handlers/gesture_handler.dart';
 import 'package:pdf_master/src/pdf/pdf_view_core.dart';
 import 'package:pdf_master/src/pdf/search/widgets.dart';
 import 'package:pdf_master/src/pdf/toc/toc.dart';
@@ -29,8 +30,10 @@ class PDFViewerPage extends StatefulWidget {
   final bool enableEdit;
   final bool showTitleBar;
   final bool showToolBar;
-  final List<AdvancedFeature> features;
   final bool doubleTapDragZoom;
+  final bool immersive;
+  final bool? appBarPadding;
+  final List<AdvancedFeature> features;
 
   const PDFViewerPage({
     super.key,
@@ -41,8 +44,10 @@ class PDFViewerPage extends StatefulWidget {
     this.enableEdit = true,
     this.showTitleBar = true,
     this.showToolBar = true,
-    this.features = AdvancedFeature.values,
     this.doubleTapDragZoom = false,
+    this.immersive = false,
+    this.appBarPadding,
+    this.features = AdvancedFeature.values,
   });
 
   @override
@@ -83,6 +88,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   final appBarKey = GlobalKey();
   final bottomBarKey = GlobalKey();
   int currentPagerIndex = 0;
+  late bool _barsVisible;
 
   double get appBarHeight {
     final renderBox = appBarKey.currentContext?.findRenderObject() as RenderBox?;
@@ -99,6 +105,10 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   @override
   void initState() {
     super.initState();
+    _barsVisible = !widget.immersive;
+    if (widget.immersive) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    }
     _openDocument(widget.password);
     PdfMaster.instance.darkModeNotifier.addListener(_onDarkModeChanged);
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -108,8 +118,23 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   void dispose() {
     super.dispose();
     controller.dispose();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge); 
     PdfMaster.instance.darkModeNotifier.removeListener(_onDarkModeChanged);
     SystemChrome.setPreferredOrientations([]);
+  }
+
+  void _toggleAppBars() {
+    setState(() {
+      _barsVisible = !_barsVisible;
+    });
+
+    if (widget.immersive) {
+      if (_barsVisible) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      }
+    }
   }
 
   void _openDocument(String password) async {
@@ -141,6 +166,16 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   }
 
   Widget _buildContent(_, BoxConstraints constraints) {
+    final padded = EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight);
+    late final EdgeInsets contentPadding;
+    if (widget.appBarPadding == true) {
+      contentPadding = padded;
+    } else if (widget.appBarPadding == false) {
+      contentPadding = EdgeInsets.zero;
+    } else {
+      contentPadding = widget.immersive ? EdgeInsets.zero : padded;
+    }
+    
     switch (controller.openState) {
       case PdfOpenState.kFmtError:
       case PdfOpenState.kUnknownError:
@@ -161,6 +196,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
             doubleTapDragZoom: widget.doubleTapDragZoom,
+            contentPadding: contentPadding,
             onPageChanged: (index) => currentPagerIndex = index,
           ),
           child: PdfPageViewer(
@@ -172,6 +208,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
             enableEdit: widget.enableEdit,
             initialPageIndex: currentPagerIndex,
             doubleTapDragZoom: widget.doubleTapDragZoom,
+            contentPadding: contentPadding,
             onPageChanged: (index) => currentPagerIndex = index,
           ),
         );
@@ -182,13 +219,40 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   Widget build(BuildContext context) {
     Widget body = Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          Positioned.fill(top: 0, bottom: 0, child: LayoutBuilder(builder: _buildContent)),
-          Positioned(top: 0, left: 0, right: 0, child: _appBar()),
-          Positioned(bottom: 0, left: 0, right: 0, child: _bottomBar()),
-          if (fullscreen) FullScreenExitButton(onTap: () => _changeFullScreenMode(false)),
-        ],
+      body: NotificationListener<PdfBackgroundTapNotification>(
+        onNotification: (notification) {
+          _toggleAppBars();
+          return true;
+        },
+        child: Stack(
+          children: [
+            Positioned.fill(
+              top: 0,
+              bottom: 0,
+              child: LayoutBuilder(builder: _buildContent),
+            ),
+
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              top: _barsVisible ? 0 : -(appBarHeight + MediaQuery.of(context).padding.top),
+              left: 0,
+              right: 0,
+              child: _appBar(),
+            ),
+
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              bottom: _barsVisible ? 0 : -(bottomBarHeight + MediaQuery.of(context).padding.bottom),
+              left: 0,
+              right: 0,
+              child: _bottomBar(),
+            ),
+
+            if (fullscreen) FullScreenExitButton(onTap: () => _changeFullScreenMode(false)),
+          ],
+        ),
       ),
     );
 
@@ -333,6 +397,7 @@ class PdfPageViewer extends StatefulWidget {
   final int initialPageIndex;
   final ValueChanged<int>? onPageChanged;
   final bool doubleTapDragZoom;
+  final EdgeInsets contentPadding;
 
   const PdfPageViewer({
     super.key,
@@ -344,6 +409,7 @@ class PdfPageViewer extends StatefulWidget {
     this.initialPageIndex = 0,
     this.onPageChanged,
     this.doubleTapDragZoom = false,
+    this.contentPadding = EdgeInsets.zero,
   });
 
   @override
@@ -428,7 +494,7 @@ class _PdfPageViewerState extends State<PdfPageViewer> {
           widget.controller.scaleNotifier.value = zoomViewScale;
         },
         child: ListView.builder(
-          padding: widget.padding,
+          padding: widget.contentPadding,
           controller: scrollController,
           physics: zoomViewScale == 1.0 ? PageScrollPhysics() : null,
           scrollDirection: Axis.horizontal,
@@ -460,6 +526,7 @@ class PdfListViewer extends StatefulWidget {
   final int initialPageIndex;
   final ValueChanged<int>? onPageChanged;
   final bool doubleTapDragZoom;
+  final EdgeInsets contentPadding;
 
   const PdfListViewer({
     super.key,
@@ -471,6 +538,7 @@ class PdfListViewer extends StatefulWidget {
     this.initialPageIndex = 0,
     this.onPageChanged,
     this.doubleTapDragZoom = false,
+    this.contentPadding = EdgeInsets.zero,
   });
 
   @override
@@ -561,7 +629,10 @@ class _PdfListViewerState extends State<PdfListViewer> {
           widget.controller.scaleNotifier.value = zoomViewScale;
         },
         child: ListView.separated(
-          padding: EdgeInsets.only(top: max(_getListViewPaddingTop(), widget.padding.top), bottom: widget.padding.top),
+          padding: EdgeInsets.only(
+            top: _getListViewPaddingTop() + widget.contentPadding.top,
+            bottom: widget.contentPadding.bottom,
+          ),
           cacheExtent: 3 * widget.constraints.maxHeight,
           controller: scrollController,
           itemBuilder: (ctx, index) => _PdfViewBox(
