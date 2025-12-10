@@ -194,6 +194,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
           if (notification is PdfBackgroundTapNotification) {
             _toggleBarVisible();
           } else if (notification is ScrollUpdateNotification) {
+            if (notification.metrics.axis == Axis.horizontal) return false;
             if (appBarHeight != 0 && !pageMode) {
               if (notification.metrics.pixels >= appBarHeight && _barsVisible) {
                 _toggleBarVisible(visible: false);
