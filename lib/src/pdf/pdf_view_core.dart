@@ -184,13 +184,9 @@ class _PdfViewCoreState extends State<PdfViewCore> {
       height: renderHeight,
       child: Stack(
         children: [
-          GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: widget.enableEdit? null: () => PdfBackgroundTapNotification().dispatch(context),
-            child: CustomPaint(
-              size: Size(renderWidth, renderHeight),
-              painter: PdfPainter(image: image, thumbImage: thumbImage, thumbRect: thumbRect, darkMode: darkMode),
-            ),
+          CustomPaint(
+            size: Size(renderWidth, renderHeight),
+            painter: PdfPainter(image: image, thumbImage: thumbImage, thumbRect: thumbRect, darkMode: darkMode),
           ),
           if (widget.enableEdit)
             SearchHighlightLayer(

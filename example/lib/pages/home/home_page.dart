@@ -195,17 +195,7 @@ class _HomePageState extends State<HomePage> {
   void _openPdfViewerPage(String filePath) async {
     final result = await Navigator.of(
       context,
-    ).push(PDFMasterPageRouter(builder: (ctx) => PDFViewerPage(
-        filePath: filePath,
-        doubleTapDragZoom: true,
-        immersive: immersiveModeNotifier.value,
-        appBarPadding: switch(appBarPaddingNotifier.value) {
-          PaddingChoice.yes => true,
-          PaddingChoice.no => false,
-          PaddingChoice.none => null,
-        },
-      ))
-    );
+    ).push(PDFMasterPageRouter(builder: (ctx) => PDFViewerPage(filePath: filePath, doubleTapDragZoom: true)));
     if (result != null && result is String) {
       _highlightedFilePath = await _copyAndSaveFile(result);
       await _refreshFileList();
@@ -276,6 +266,7 @@ class _HomePageState extends State<HomePage> {
                   onTap: () => _onFileItemTap(fileList[index]),
                   onLongPress: () => _enterEditMode(index),
                   onFileDelete: () => _handleFileDelete(fileList[index].path),
+
                   /// TODO The highlight feature has a bug; disable it for now.
                   highlight: false,
                   action: _getActionByIndex(index),
