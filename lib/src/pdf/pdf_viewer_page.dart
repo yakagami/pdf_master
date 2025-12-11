@@ -110,6 +110,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   void dispose() {
     super.dispose();
     controller.dispose();
+    controller.editStateNotifier.removeListener(_toggleBarVisible);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     PdfMaster.instance.darkModeNotifier.removeListener(_onDarkModeChanged);
     SystemChrome.setPreferredOrientations([]);
@@ -120,6 +121,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
     await controller.open();
     if (!mounted) return;
     if (controller.opened) {
+      controller.editStateNotifier.addListener(_toggleBarVisible);
       setState(() {});
     } else if (controller.needPassword) {
       final input = await showPdfMasterInputDialog(
@@ -144,7 +146,16 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   }
 
   void _toggleBarVisible({bool? visible}) {
-    setState(() => _barsVisible = visible ?? !_barsVisible);
+    bool nextValue;
+    if (controller.editStateNotifier.value == PdfEditState.kNone) {
+      nextValue = visible ?? !_barsVisible;
+    } else {
+      nextValue = true;
+    }
+
+    if (_barsVisible != nextValue) {
+      setState(() => _barsVisible = nextValue);
+    }
   }
 
   Widget _buildContent(_, BoxConstraints constraints) {
