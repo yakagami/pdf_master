@@ -1,8 +1,6 @@
-
-name: Build and Release Android Example
+name: Build and Update 'Latest' Release
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - master
@@ -11,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-android:
+  build-and-release:
     runs-on: ubuntu-latest
     
     defaults:
@@ -19,10 +17,8 @@ jobs:
         working-directory: ./example
 
     steps:
-      - name: Checkout Specific Branch
+      - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: 'master'
 
       - name: Set Up Java
         uses: actions/setup-java@v3
@@ -57,30 +53,21 @@ jobs:
       - name: Build APK
         run: flutter build apk --release --split-per-abi
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: android-apks
-          path: example/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-
-  create-release:
-    needs: build-android
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: android-apks
-          path: apks
-
-      - name: Generate Release Tag
-        id: tag
+      - name: Overwrite 'latest' Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "release_tag=build-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          # 1. Delete the existing 'latest' release and tag
+          # The '|| true' part ensures the workflow doesn't crash if 'latest' doesn't exist yet (first run)
+          gh release delete latest --cleanup-tag --yes || true
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.tag.outputs.release_tag }}
-          files: apks/*.apk
-          draft: false
-          prerelease: false
+          # 2. Sleep for 2 seconds to ensure GitHub processes the deletion
+          sleep 2
+
+          # 3. Create the new release and upload the asset
+          gh release create latest \
+            example/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+            --title "Latest Build" \
+            --notes "Automated build from commit ${{ github.sha }}" \
+            --prerelease \
+            --target ${{ github.sha }}
