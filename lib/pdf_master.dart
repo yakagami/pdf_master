@@ -1,10 +1,13 @@
 export 'package:pdf_master/src/pdf/pdf_item_view.dart' show PdfItemView, PdfCoverView;
-export 'package:pdf_master/src/pdf/pdf_viewer_page.dart' show PDFViewerPage;
+export 'package:pdf_master/src/pdf/pdf_viewer_page.dart';
 
 export 'package:pdf_master/src/component/alert_dialog.dart';
 export 'package:pdf_master/src/component/page_router.dart';
 export 'package:pdf_master/src/component/app_bar.dart';
 export 'package:pdf_master/src/pdf/features/features.dart' show AdvancedFeature;
+export 'package:pdf_master/src/pdf/handlers/gesture_handler.dart';
+export 'package:pdf_master/src/component/bottom_bar.dart';
+export 'package:pdf_master/src/core/pdf_controller.dart' show PdfController, PdfOpenState;
 
 import 'dart:convert';
 import 'dart:ui' as ui;
