@@ -369,7 +369,6 @@ class _PDFViewerPageInternalState extends State<_PDFViewerPageInternal> {
   final containerKey = GlobalKey();
   final appBarKey = GlobalKey();
   final bottomBarKey = GlobalKey();
-  int currentPagerIndex = 0;
   bool _barsVisible = true;
 
   double get appBarHeight {
@@ -408,6 +407,8 @@ class _PDFViewerPageInternalState extends State<_PDFViewerPageInternal> {
 
   @override
   void dispose() {
+    widget.controller.dispose();
+    widget.controller.editStateNotifier.removeListener(_toggleBarVisible);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     PdfMaster.instance.darkModeNotifier.removeListener(_onDarkModeChanged);
     SystemChrome.setPreferredOrientations([]);
@@ -419,7 +420,16 @@ class _PDFViewerPageInternalState extends State<_PDFViewerPageInternal> {
   }
 
   void _toggleBarVisible({bool? visible}) {
-    setState(() => _barsVisible = visible ?? !_barsVisible);
+    bool nextValue;
+    if (widget.controller.editStateNotifier.value == PdfEditState.kNone) {
+      nextValue = visible ?? !_barsVisible;
+    } else {
+      nextValue = true;
+    }
+
+    if (_barsVisible != nextValue) {
+      setState(() => _barsVisible = nextValue);
+    }
   }
 
   void _changeFullScreenMode(bool isFullScreen) {
@@ -446,9 +456,9 @@ class _PDFViewerPageInternalState extends State<_PDFViewerPageInternal> {
             padding: EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
-            initialPageIndex: currentPagerIndex,
+            initialPageIndex: 0,
             doubleTapDragZoom: widget.doubleTapDragZoom,
-            onPageChanged: (index) => currentPagerIndex = index,
+            onPageChanged: (index) => widget.controller.currentPageIndexNotifier.value = index,
           ),
           child: PdfPageViewer(
             key: ValueKey(MediaQuery.orientationOf(context)),
@@ -457,9 +467,9 @@ class _PDFViewerPageInternalState extends State<_PDFViewerPageInternal> {
             padding: EdgeInsets.only(top: appBarHeight, bottom: bottomBarHeight),
             containerKey: containerKey,
             enableEdit: widget.enableEdit,
-            initialPageIndex: currentPagerIndex,
+            initialPageIndex: 0,
             doubleTapDragZoom: widget.doubleTapDragZoom,
-            onPageChanged: (index) => currentPagerIndex = index,
+            onPageChanged: (index) => widget.controller.currentPageIndexNotifier.value = index,
           ),
         );
     }
