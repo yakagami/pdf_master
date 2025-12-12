@@ -40,20 +40,17 @@ enum ToolAction {
   }
 }
 
-class BottomToolbar extends StatelessWidget {
-  final bool pageMode;
-  final ValueChanged<ToolAction> onToolAction;
+class ToolActions{
   final List<AdvancedFeature> features;
+  final ValueChanged<ToolAction> onToolAction;
+  const ToolActions({required this.features, required this.onToolAction});
 
-  const BottomToolbar({super.key, required this.pageMode, required this.onToolAction, required this.features});
-
-  Color? getIconColor(ToolAction action) {
+  Color? getIconColor(ToolAction action, bool pageMode) {
     if (action == ToolAction.kPageMode && pageMode) {
       return Colors.blue;
     }
     return null;
   }
-
   List<ToolAction> getToolActions() {
     final actions = [ToolAction.kToc, ToolAction.kRotate, ToolAction.kPageMode, ToolAction.kSearch];
     if (features.isNotEmpty) {
@@ -61,10 +58,15 @@ class BottomToolbar extends StatelessWidget {
     }
     return actions;
   }
+}
 
+class BottomToolbar extends StatelessWidget {
+  final bool pageMode;
+  final ToolActions toolActions;
+  const BottomToolbar({super.key, required this.pageMode, required this.toolActions});
   @override
   Widget build(BuildContext context) {
-    final actions = getToolActions();
+    final actions = toolActions.getToolActions();
     return Container(
       decoration: BoxDecoration(
         color: context.pdfTheme.appBarBackgroundColor,
@@ -79,8 +81,8 @@ class BottomToolbar extends StatelessWidget {
           children: List.generate(
             actions.length,
             (index) => IconButton(
-              onPressed: () => onToolAction(actions[index]),
-              icon: Icon(actions[index]._icon(), color: getIconColor(actions[index])),
+              onPressed: () => toolActions.onToolAction(actions[index]),
+              icon: Icon(actions[index]._icon(), color: toolActions.getIconColor(actions[index], pageMode)),
               tooltip: actions[index]._title(context),
             ),
           ),
