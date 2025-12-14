@@ -67,7 +67,7 @@ class ImageSelectionHandler extends GestureHandler {
 
     // enable image selection only in edit mode.
     if (controller.editStateNotifier.value != PdfEditState.kEdit) {
-      return GestureHandleResult.handled;
+      return GestureHandleResult.notHandled;
     }
 
     // 尝试选中图片
