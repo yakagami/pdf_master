@@ -81,7 +81,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag.outputs.release_tag }}
-          target_commitish: 'zoom-view-upstream-double-tap-zoom'
+          target_commitish: 'app'
           files: apks/*.apk
           draft: false
           prerelease: false
