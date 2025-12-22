@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_master/pdf_master.dart';
 import 'package:pdf_master_example/ctx_extension.dart';
@@ -195,7 +196,7 @@ class _HomePageState extends State<HomePage> {
   void _openPdfViewerPage(String filePath) async {
     final result = await Navigator.of(
       context,
-    ).push(PDFMasterPageRouter(builder: (ctx) => PDFViewerPage(filePath: filePath, doubleTapDragZoom: true)));
+    ).push(PDFMasterPageRouter(builder: (ctx) => ImmersivePdfViewer(filePath: filePath)));
     if (result != null && result is String) {
       _highlightedFilePath = await _copyAndSaveFile(result);
       await _refreshFileList();
@@ -290,6 +291,170 @@ class _HomePageState extends State<HomePage> {
         setState(() => editMode = false);
       },
       child: home,
+    );
+  }
+}
+
+
+class ImmersivePdfViewer extends StatefulWidget {
+  final String filePath;
+  final String password;
+
+  const ImmersivePdfViewer({
+    super.key,
+    required this.filePath,
+    this.password = "",
+  });
+
+  @override
+  State<ImmersivePdfViewer> createState() => _ImmersivePdfViewerState();
+}
+
+class _ImmersivePdfViewerState extends State<ImmersivePdfViewer> {
+  bool _barsVisible = false;
+  bool _pageMode = false;
+
+  final GlobalKey _appBarKey = GlobalKey();
+  final GlobalKey _bottomBarKey = GlobalKey();
+  final GlobalKey containerKey = GlobalKey();
+
+  double get appBarHeight {
+    final renderBox =
+        _appBarKey.currentContext?.findRenderObject() as RenderBox?;
+    return renderBox?.size.height ?? 50;
+  }
+
+  double get _bottomBarHeight {
+    final renderBox =
+        _bottomBarKey.currentContext?.findRenderObject() as RenderBox?;
+    return renderBox?.size.height ?? 50;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
+
+  void _toggleBarVisible() {
+    setState(() {
+      _barsVisible = !_barsVisible;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double topOffset = _barsVisible
+        ? 0
+        : -(appBarHeight + MediaQuery.of(context).padding.top);
+    final double bottomOffset = _barsVisible
+        ? 0
+        : -(_bottomBarHeight + MediaQuery.of(context).padding.bottom);
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.black,
+      body: PdfDocumentLoader(
+        filePath: widget.filePath,
+        password: widget.password,
+        builder: (context, controller) {
+          return NotificationListener<Notification>(
+            onNotification: (notification) {
+              if (notification is PdfBackgroundTapNotification) {
+                _toggleBarVisible();
+              }
+              return true;
+            },
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: _toggleBarVisible,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Visibility(
+                          key: containerKey,
+                          visible: _pageMode,
+                          replacement: PdfListViewer(
+                            controller: controller,
+                            constraints: constraints,
+                            padding: EdgeInsets.zero,
+                            containerKey: containerKey,
+                            enableEdit: true,
+                            doubleTapDragZoom: true,
+                          ),
+                          child: PdfPageViewer(
+                            controller: controller,
+                            constraints: constraints,
+                            padding: EdgeInsets.zero,
+                            containerKey: containerKey,
+                            enableEdit: true,
+                            doubleTapDragZoom: true,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  top: topOffset,
+                  left: 0,
+                  right: 0,
+                  child: PdfAppBar(
+                    key: _appBarKey,
+                    controller: controller,
+                    title: p.basename(widget.filePath),
+                  ),
+                ),
+
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  bottom: bottomOffset,
+                  left: 0,
+                  right: 0,
+                  child: PdfBottomBar(
+                    key: _bottomBarKey,
+                    controller: controller,
+                    pageMode: _pageMode,
+                    toolActions: ToolActions(
+                      features: [],
+                      onToolAction: (action) {
+                        PDFLogicHelper.onToolAction(
+                          context,
+                          controller,
+                          action,
+                          onTogglePageMode: () =>
+                              setState(() => _pageMode = !_pageMode),
+                          onRotate: () {},
+                          onFeatureSelected: (feature) async {
+                            final newPath =
+                                await PDFLogicHelper.onFeatureAction(
+                                  context,
+                                  controller,
+                                  feature,
+                                );
+                            if (mounted && newPath != null) {}
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
