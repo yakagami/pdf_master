@@ -3,6 +3,9 @@ name: Build and Release Android Example
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
 
 permissions:
   contents: write
